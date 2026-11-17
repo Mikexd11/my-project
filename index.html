@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Habits</title>
+  <meta name="description" content="A calm habit tracker that saves in your browser.">
+  <meta name="theme-color" content="#15172A">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2315172A'/%3E%3Crect x='6' y='9' width='20' height='4' rx='2' fill='%23F2B33D'/%3E%3Crect x='6' y='15' width='13' height='4' rx='2' fill='%235FD3A6'/%3E%3Crect x='6' y='21' width='17' height='4' rx='2' fill='%23F2766B'/%3E%3C/svg%3E">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to habits</a>
+
+  <div class="shell">
+    <aside class="side" aria-label="Areas">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="7" width="24" height="5" rx="2.5" fill="var(--saffron)"/><rect x="4" y="14" width="15" height="5" rx="2.5" fill="var(--mint)"/><rect x="4" y="21" width="20" height="5" rx="2.5" fill="var(--coral)"/></svg>
+        <span>Habits</span>
+      </div>
+
+      <nav class="areas">
+        <h2 class="side-head">Areas</h2>
+        <ul id="areaList"></ul>
+      </nav>
+
+      <div class="side-foot">
+        <button class="link-btn" id="exportBtn" type="button">Export data</button>
+        <label class="link-btn" for="importFile">Import data</label>
+        <input id="importFile" type="file" accept="application/json" hidden>
+        <p class="side-note">Everything is saved in this browser only.</p>
+      </div>
+    </aside>
+
+    <main id="main" class="main">
+      <header class="top">
+        <div class="day-title">
+          <h1 id="weekday">Today</h1>
+          <p id="fullDate" class="full-date"></p>
+        </div>
+        <div class="top-actions">
+          <div class="stepper" role="group" aria-label="Change day">
+            <button class="icon-btn" id="prevDay" type="button" aria-label="Previous day" title="Previous day (←)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+            </button>
+            <button class="today-btn" id="todayBtn" type="button">Today</button>
+            <button class="icon-btn" id="nextDay" type="button" aria-label="Next day" title="Next day (→)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+          <button class="primary" id="newHabitBtn" type="button" title="New habit (N)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            New habit
+          </button>
+        </div>
+      </header>
+
+      <section class="summary" aria-live="polite">
+        <p id="sentence" class="sentence"></p>
+        <dl class="figures" id="figures"></dl>
+      </section>
+
+      <div class="day-grid">
+        <section class="panel today" aria-labelledby="todayHead">
+          <h2 id="todayHead" class="panel-head">Habits for this day</h2>
+          <ul id="habitList" class="habit-list"></ul>
+          <details id="restWrap" class="rest" hidden>
+            <summary id="restSummary"></summary>
+            <ul id="restList" class="habit-list quiet"></ul>
+          </details>
+        </section>
+
+        <section class="panel note" aria-labelledby="noteHead">
+          <div class="note-top">
+            <h2 id="noteHead" class="panel-head">Day note</h2>
+            <span id="noteStatus" class="note-status" aria-live="polite"></span>
+          </div>
+          <textarea id="noteInput" placeholder="How did today go? What got in the way?" aria-labelledby="noteHead"></textarea>
+        </section>
+      </div>
+
+      <section class="panel weave-panel" aria-labelledby="weaveHead">
+        <div class="weave-top">
+          <div>
+            <h2 id="weaveHead" class="panel-head">Five weeks</h2>
+            <p class="weave-help">Each line is a habit. Unbroken runs join into one thread. Click a day to mark it.</p>
+          </div>
+          <div class="stepper" role="group" aria-label="Change weeks">
+            <button class="icon-btn" id="prevWeeks" type="button" aria-label="Earlier weeks">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+            </button>
+            <button class="icon-btn" id="nextWeeks" type="button" aria-label="Later weeks">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="weave-scroll">
+          <div id="weave" class="weave" role="grid" aria-label="Habit history"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="habitDialog" class="dialog" aria-labelledby="dialogTitle">
+    <form id="habitForm" method="dialog">
+      <h2 id="dialogTitle">New habit</h2>
+
+      <label class="field">
+        <span>Name</span>
+        <input name="name" required maxlength="40" placeholder="Read 10 pages" autocomplete="off">
+      </label>
+
+      <label class="field">
+        <span>Area</span>
+        <input name="area" list="areaOptions" maxlength="24" placeholder="Health" autocomplete="off">
+        <datalist id="areaOptions"></datalist>
+      </label>
+
+      <fieldset class="field">
+        <legend>Colour</legend>
+        <div class="swatches" id="swatches"></div>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend>How you mark it</legend>
+        <div class="segmented">
+          <label><input type="radio" name="kind" value="check" checked><span>Done or not</span></label>
+          <label><input type="radio" name="kind" value="count"><span>Count up to a goal</span></label>
+        </div>
+        <div class="count-row" id="countRow" hidden>
+          <label class="field inline"><span>Goal</span><input name="target" type="number" min="2" max="50" value="8"></label>
+          <label class="field inline"><span>Unit</span><input name="unit" maxlength="16" value="glasses"></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend>Days</legend>
+        <div class="days" id="dayPicker"></div>
+        <div class="presets">
+          <button type="button" class="link-btn" data-preset="all">Every day</button>
+          <button type="button" class="link-btn" data-preset="week">Weekdays</button>
+          <button type="button" class="link-btn" data-preset="mwf">Mon, Wed, Fri</button>
+        </div>
+      </fieldset>
+
+      <p id="formError" class="form-error" role="alert"></p>
+
+      <div class="dialog-actions">
+        <button type="button" class="danger" id="deleteHabit" hidden>Delete habit</button>
+        <span class="spacer"></span>
+        <button type="button" class="ghost" id="cancelDialog">Cancel</button>
+        <button type="submit" class="primary" id="saveHabit">Add habit</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
